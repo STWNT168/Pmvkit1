@@ -50,7 +50,19 @@
       <label>Date<input type="date" id="spm-date" required></label>
       <label>Office<select id="spm-office" required><option value="">Loading Office…</option></select></label>
     </div>
-    <p class="form-help">Enter both <b>kits</b> and <b>tool-kit articles</b> exactly as per the office report.</p>
+    <p class="form-help">Enter both <b>kits</b> and <b>tool-kit articles</b> exactly as per the office report. Include today's receipts and redirected items.</p>
+  </div>
+
+  <div class="card">
+    <h3>Today's Receipt &amp; Redirection</h3>
+    <div class="field-row">
+      <label>Total Kits Came Today<input id="kits-came-today" type="number" min="0" value="0" required></label>
+      <label>Total Articles Came Today<input id="articles-came-today" type="number" min="0" value="0" required></label>
+    </div>
+    <div class="field-row">
+      <label>Redirected Kits<input id="redirected-kits" type="number" min="0" value="0" required></label>
+      <label>Redirected Articles<input id="redirected-articles" type="number" min="0" value="0" required></label>
+    </div>
   </div>
 
   <div class="card">
@@ -131,6 +143,10 @@
     </header>
     <div id="spm-dashboard-status" class="admin-status">Loading…</div>
     <section class="admin-kpi-grid report-kpis">
+      <article><span>Total Kits Came Today</span><strong id="spm-kpi-kits-came-today">0</strong></article>
+      <article><span>Total Articles Came Today</span><strong id="spm-kpi-articles-came-today">0</strong></article>
+      <article><span>Redirected Kits</span><strong id="spm-kpi-redirected-kits">0</strong></article>
+      <article><span>Redirected Articles</span><strong id="spm-kpi-redirected-articles">0</strong></article>
       <article><span>Total Pending Kits</span><strong id="spm-kpi-pending-kits">0</strong></article>
       <article><span>Tool-kit Articles</span><strong id="spm-kpi-pending-articles">0</strong></article>
       <article><span>Deliverable Kits</span><strong id="spm-kpi-deliverable-kits">0</strong></article>
@@ -163,6 +179,10 @@
     <div id="admin-dashboard-status" class="admin-status">Loading…</div>
 
     <section class="admin-kpi-grid report-kpis">
+      <article><span>Total Kits Came Today</span><strong id="admin-kpi-kits-came-today">0</strong></article>
+      <article><span>Total Articles Came Today</span><strong id="admin-kpi-articles-came-today">0</strong></article>
+      <article><span>Redirected Kits</span><strong id="admin-kpi-redirected-kits">0</strong></article>
+      <article><span>Redirected Articles</span><strong id="admin-kpi-redirected-articles">0</strong></article>
       <article><span>Total Pending Kits</span><strong id="admin-kpi-pending-kits">0</strong></article>
       <article><span>Tool-kit Articles</span><strong id="admin-kpi-pending-articles">0</strong></article>
       <article><span>Deliverable Kits</span><strong id="admin-kpi-deliverable-kits">0</strong></article>
@@ -179,7 +199,7 @@
         <table class="admin-table admin-detailed-table report-admin-table">
           <thead>
             <tr>
-              <th>Office</th><th>SPM Status</th><th>Total Pending Kits</th><th>Tool Kit Articles</th>
+              <th>Office</th><th>SPM Status</th><th>Kits Came Today</th><th>Articles Came Today</th><th>Redirected Kits</th><th>Redirected Articles</th><th>Total Pending Kits</th><th>Tool Kit Articles</th>
               <th>Invalid Mobile Kits</th><th>Invalid Mobile Articles</th>
               <th>Deliverable Kits</th><th>Deliverable Articles</th>
               <th>Incomplete Kits</th><th>Incomplete Articles</th>
