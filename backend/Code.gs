@@ -815,7 +815,8 @@ function setupSheets() {
       "DELIVERABLE_KITS","DELIVERABLE_ARTICLES",
       "INCOMPLETE_KITS","INCOMPLETE_ARTICLES",
       "IMPROPER_DETAILS_KITS","IMPROPER_DETAILS_ARTICLES",
-      "SUBMITTED_AT","UPDATED_AT","STATUS"
+      "SUBMITTED_AT","UPDATED_AT","STATUS",
+      "KITS_CAME_TODAY","ARTICLES_CAME_TODAY","REDIRECTED_KITS","REDIRECTED_ARTICLES"
     ],
     OFFICE_MASTER:[
       "OFFICE_ID","OFFICE_NAME","DIVISION","SPM_ID","SPM_NAME","ACTIVE"
@@ -843,6 +844,13 @@ function setupSheets() {
 
     if (sh.getLastRow() === 0) {
       sh.getRange(1,1,1,defs[name].length).setValues([defs[name]]);
+    } else {
+      var existingHeaders = sh.getRange(1,1,1,Math.max(1, sh.getLastColumn())).getValues()[0].map(function(v){ return String(v || "").trim(); });
+      var missing = defs[name].filter(function(h){ return existingHeaders.indexOf(h) === -1; });
+      if (missing.length) {
+        var startCol = sh.getLastColumn() + 1;
+        sh.getRange(1,startCol,1,missing.length).setValues([missing]);
+      }
     }
   });
 
@@ -962,7 +970,8 @@ function normalizePmvReport(r) {
     "invalidMobileKits","invalidMobileArticles",
     "deliverableKits","deliverableArticles",
     "incompleteKits","incompleteArticles",
-    "improperDetailsKits","improperDetailsArticles"
+    "improperDetailsKits","improperDetailsArticles",
+    "kitsCameToday","articlesCameToday","redirectedKits","redirectedArticles"
   ].forEach(function(k) {
     r[k] = pmvNumber(r[k]);
   });
@@ -1007,6 +1016,7 @@ function validatePmvReport(r) {
   }
 
   [
+    "kitsCameToday","articlesCameToday","redirectedKits","redirectedArticles",
     "invalidMobileKits","invalidMobileArticles",
     "deliverableKits","deliverableArticles",
     "incompleteKits","incompleteArticles",
@@ -1043,6 +1053,10 @@ function mapPmvReport(r) {
     spmName: String(r.SPM_NAME || ""),
     totalPendingKits: pmvNumber(r.TOTAL_PENDING_KITS),
     totalPendingArticles: pmvNumber(r.TOTAL_PENDING_ARTICLES),
+    kitsCameToday: pmvNumber(r.KITS_CAME_TODAY),
+    articlesCameToday: pmvNumber(r.ARTICLES_CAME_TODAY),
+    redirectedKits: pmvNumber(r.REDIRECTED_KITS),
+    redirectedArticles: pmvNumber(r.REDIRECTED_ARTICLES),
     invalidMobileKits: pmvNumber(r.INVALID_MOBILE_KITS),
     invalidMobileArticles: pmvNumber(r.INVALID_MOBILE_ARTICLES),
     deliverableKits: pmvNumber(r.DELIVERABLE_KITS),
@@ -1107,7 +1121,8 @@ function submitPmvReport(record, s) {
       r.deliverableKits, r.deliverableArticles,
       r.incompleteKits, r.incompleteArticles,
       r.improperDetailsKits, r.improperDetailsArticles,
-      new Date(r.submittedAt || Date.now()), new Date(), "FINAL"
+      new Date(r.submittedAt || Date.now()), new Date(), "FINAL",
+      r.kitsCameToday, r.articlesCameToday, r.redirectedKits, r.redirectedArticles
     ];
 
     getSheet(SHEETS.PMV_REPORTS).appendRow(row);
@@ -1221,7 +1236,11 @@ function getAdminPmvDashboard(s, date) {
       incompleteKits:0,
       incompleteArticles:0,
       improperDetailsKits:0,
-      improperDetailsArticles:0
+      improperDetailsArticles:0,
+      kitsCameToday:0,
+      articlesCameToday:0,
+      redirectedKits:0,
+      redirectedArticles:0
     };
   });
 
@@ -1247,7 +1266,11 @@ function getAdminPmvDashboard(s, date) {
         incompleteKits:0,
         incompleteArticles:0,
         improperDetailsKits:0,
-        improperDetailsArticles:0
+        improperDetailsArticles:0,
+        kitsCameToday:0,
+        articlesCameToday:0,
+        redirectedKits:0,
+        redirectedArticles:0
       };
     }
 
@@ -1286,7 +1309,11 @@ function getAdminPmvDashboard(s, date) {
         incompleteKits:0,
         incompleteArticles:0,
         improperDetailsKits:0,
-        improperDetailsArticles:0
+        improperDetailsArticles:0,
+        kitsCameToday:0,
+        articlesCameToday:0,
+        redirectedKits:0,
+        redirectedArticles:0
       };
     }
 
@@ -1301,6 +1328,10 @@ function getAdminPmvDashboard(s, date) {
     o.incompleteArticles += pmvNumber(r.INCOMPLETE_ARTICLES);
     o.improperDetailsKits += pmvNumber(r.IMPROPER_DETAILS_KITS);
     o.improperDetailsArticles += pmvNumber(r.IMPROPER_DETAILS_ARTICLES);
+    o.kitsCameToday += pmvNumber(r.KITS_CAME_TODAY);
+    o.articlesCameToday += pmvNumber(r.ARTICLES_CAME_TODAY);
+    o.redirectedKits += pmvNumber(r.REDIRECTED_KITS);
+    o.redirectedArticles += pmvNumber(r.REDIRECTED_ARTICLES);
   });
 
   var offices = Object.keys(officeMap).map(function(k) {
@@ -1319,7 +1350,11 @@ function getAdminPmvDashboard(s, date) {
     incompleteKits:0,
     incompleteArticles:0,
     improperDetailsKits:0,
-    improperDetailsArticles:0
+    improperDetailsArticles:0,
+    kitsCameToday:0,
+    articlesCameToday:0,
+    redirectedKits:0,
+    redirectedArticles:0
   };
 
   offices.forEach(function(o) {
@@ -1333,6 +1368,10 @@ function getAdminPmvDashboard(s, date) {
     kpis.incompleteArticles += o.incompleteArticles;
     kpis.improperDetailsKits += o.improperDetailsKits;
     kpis.improperDetailsArticles += o.improperDetailsArticles;
+    kpis.kitsCameToday += o.kitsCameToday;
+    kpis.articlesCameToday += o.articlesCameToday;
+    kpis.redirectedKits += o.redirectedKits;
+    kpis.redirectedArticles += o.redirectedArticles;
   });
 
   var total = users.length;
