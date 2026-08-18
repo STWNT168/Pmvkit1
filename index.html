@@ -50,12 +50,10 @@
       <label>Date<input type="date" id="spm-date" required></label>
       <label>Office<select id="spm-office" required><option value="">Loading Office…</option></select></label>
     </div>
-    <p class="form-help">Enter the four status categories exactly as per the office report. Total pending is calculated automatically as the sum of Invalid Mobile + Deliverable + Incomplete + Improper Details. Receipt and redirection totals are calculated separately from the entries below.</p>
   </div>
 
   <div class="card">
-    <h3>Today's Receipt &amp; Redirection — Auto Calculated</h3>
-    <p class="form-help">Add individual receipt/redirection quantities below. The four totals are calculated automatically and cannot be edited directly. These totals are independent of the pending-status calculation.</p>
+    <h3>Today's Receipt & Redirection</h3>
     <div class="receipt-entry-grid">
       <div><label>Type<select id="receipt-type"><option value="KIT">Kit</option><option value="ARTICLE">Article</option></select></label></div>
       <div><label>Movement<select id="receipt-movement"><option value="RECEIVED">Received Today</option><option value="REDIRECTED">Redirected</option></select></label></div>
@@ -73,6 +71,8 @@
       <article><span>Total Articles Came Today</span><strong id="articles-came-today">0</strong></article>
       <article><span>Redirected Kits</span><strong id="redirected-kits">0</strong></article>
       <article><span>Redirected Articles</span><strong id="redirected-articles">0</strong></article>
+      <article><span>Kits Delivered Today</span><strong id="kits-delivered-today">0</strong></article>
+      <article><span>Articles Delivered Today</span><strong id="articles-delivered-today">0</strong></article>
     </div>
   </div>
 
@@ -80,58 +80,28 @@
     <h3>PMV Toolkit Status</h3>
     <div class="report-table-wrap">
       <table class="report-table">
-        <thead>
-          <tr>
-            <th>Details of article</th>
-            <th>Kits</th>
-            <th>Tool kit articles</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Details of article</th><th>Kits</th><th>Tool kit articles</th></tr></thead>
         <tbody>
           <tr class="report-total-row">
             <td><b>Total pending kits at SO</b></td>
             <td><input id="total-pending-kits" type="number" min="0" readonly></td>
             <td><input id="total-pending-articles" type="number" min="0" readonly></td>
           </tr>
-          <tr>
-            <td>Kits bearing invalid mobile number</td>
-            <td><input id="invalid-mobile-kits" type="number" min="0" value="0" required></td>
-            <td><input id="invalid-mobile-articles" type="number" min="0" value="0" required></td>
-          </tr>
-          <tr>
-            <td>Number of kits Deliverable</td>
-            <td><input id="deliverable-kits" type="number" min="0" value="0" required></td>
-            <td><input id="deliverable-articles" type="number" min="0" value="0" required></td>
-          </tr>
-          <tr>
-            <td>Incomplete Kits</td>
-            <td><input id="incomplete-kits" type="number" min="0" value="0" required></td>
-            <td><input id="incomplete-articles" type="number" min="0" value="0" required></td>
-          </tr>
-          <tr>
-            <td>Kits without proper article details/address</td>
-            <td><input id="improper-details-kits" type="number" min="0" value="0" required></td>
-            <td><input id="improper-details-articles" type="number" min="0" value="0" required></td>
-          </tr>
+          <tr><td>Kits bearing invalid mobile number</td><td><input id="invalid-mobile-kits" type="number" min="0" value="0" required></td><td><input id="invalid-mobile-articles" type="number" min="0" value="0" required></td></tr>
+          <tr><td>Number of kits Deliverable</td><td><input id="deliverable-kits" type="number" min="0" value="0" required></td><td><input id="deliverable-articles" type="number" min="0" value="0" required></td></tr>
+          <tr><td>Incomplete Kits</td><td><input id="incomplete-kits" type="number" min="0" value="0" required></td><td><input id="incomplete-articles" type="number" min="0" value="0" required></td></tr>
+          <tr><td>Kits without proper article details/address</td><td><input id="improper-details-kits" type="number" min="0" value="0" required></td><td><input id="improper-details-articles" type="number" min="0" value="0" required></td></tr>
         </tbody>
-        <tfoot>
-          <tr>
-            <td><b>Total</b></td>
-            <td><b id="spm-total-kits">0</b></td>
-            <td><b id="spm-total-articles">0</b></td>
-          </tr>
-        </tfoot>
+        <tfoot><tr><td><b>Total</b></td><td><b id="spm-total-kits">0</b></td><td><b id="spm-total-articles">0</b></td></tr></tfoot>
       </table>
     </div>
   </div>
 
   <div id="spm-report-status"></div>
-
   <div class="card summary-card">
     <div><span>Total Pending Kits</span><b id="spm-summary-kits">0</b></div>
     <div><span>Total Tool-kit Articles</span><b id="spm-summary-articles">0</b></div>
   </div>
-
   <div class="action-row">
     <button type="button" id="btn-save-draft" class="btn btn-secondary">SAVE DRAFT</button>
     <button type="button" id="btn-submit" class="btn btn-primary">SUBMIT REPORT</button>
@@ -142,15 +112,8 @@
 <main id="screen-dashboard" class="screen hidden">
   <div id="spm-dashboard-view" class="report-dashboard hidden">
     <header class="dashboard-head">
-      <div>
-        <p class="admin-eyebrow">PMV TOOLKIT</p>
-        <h1>My Office Dashboard</h1>
-        <p>SPM: <strong id="spm-dash-name">—</strong> · Office: <strong id="spm-dash-office">—</strong></p>
-      </div>
-      <div class="dashboard-actions">
-        <label>Date<input id="spm-dashboard-date" type="date"></label>
-        <button id="spm-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button>
-      </div>
+      <div><p class="admin-eyebrow">PMV TOOLKIT</p><h1>My Office Dashboard</h1><p>SPM: <strong id="spm-dash-name">—</strong> · Office: <strong id="spm-dash-office">—</strong></p></div>
+      <div class="dashboard-actions"><label>Date<input id="spm-dashboard-date" type="date"></label><button id="spm-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button></div>
     </header>
     <div id="spm-dashboard-status" class="admin-status">Loading…</div>
     <section class="admin-kpi-grid report-kpis">
@@ -158,6 +121,8 @@
       <article><span>Total Articles Came Today</span><strong id="spm-kpi-articles-came-today">0</strong></article>
       <article><span>Redirected Kits</span><strong id="spm-kpi-redirected-kits">0</strong></article>
       <article><span>Redirected Articles</span><strong id="spm-kpi-redirected-articles">0</strong></article>
+      <article><span>Kits Delivered Today</span><strong id="spm-kpi-kits-delivered-today">0</strong></article>
+      <article><span>Articles Delivered Today</span><strong id="spm-kpi-articles-delivered-today">0</strong></article>
       <article><span>Total Pending Kits</span><strong id="spm-kpi-pending-kits">0</strong></article>
       <article><span>Tool-kit Articles</span><strong id="spm-kpi-pending-articles">0</strong></article>
       <article><span>Deliverable Kits</span><strong id="spm-kpi-deliverable-kits">0</strong></article>
@@ -176,24 +141,17 @@
 
   <div id="admin-dashboard-view" class="admin-dashboard hidden">
     <header class="admin-dashboard-header">
-      <div>
-        <p class="admin-eyebrow">PMV TOOLKIT</p>
-        <h1>Admin / DPS Consolidated Dashboard</h1>
-        <p>Monitoring date: <strong id="admin-selected-date">—</strong></p>
-      </div>
-      <div class="dashboard-actions">
-        <label>Date<input id="admin-dashboard-date" type="date"></label>
-        <button id="admin-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button>
-      </div>
+      <div><p class="admin-eyebrow">PMV TOOLKIT</p><h1>Admin / DPS Consolidated Dashboard</h1><p>Monitoring date: <strong id="admin-selected-date">—</strong></p></div>
+      <div class="dashboard-actions"><label>Date<input id="admin-dashboard-date" type="date"></label><button id="admin-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button></div>
     </header>
-
     <div id="admin-dashboard-status" class="admin-status">Loading…</div>
-
     <section class="admin-kpi-grid report-kpis">
       <article><span>Total Kits Came Today</span><strong id="admin-kpi-kits-came-today">0</strong></article>
       <article><span>Total Articles Came Today</span><strong id="admin-kpi-articles-came-today">0</strong></article>
       <article><span>Redirected Kits</span><strong id="admin-kpi-redirected-kits">0</strong></article>
       <article><span>Redirected Articles</span><strong id="admin-kpi-redirected-articles">0</strong></article>
+      <article><span>Kits Delivered Today</span><strong id="admin-kpi-kits-delivered-today">0</strong></article>
+      <article><span>Articles Delivered Today</span><strong id="admin-kpi-articles-delivered-today">0</strong></article>
       <article><span>Total Pending Kits</span><strong id="admin-kpi-pending-kits">0</strong></article>
       <article><span>Tool-kit Articles</span><strong id="admin-kpi-pending-articles">0</strong></article>
       <article><span>Deliverable Kits</span><strong id="admin-kpi-deliverable-kits">0</strong></article>
@@ -203,25 +161,18 @@
       <article><span>Improper Details Kits</span><strong id="admin-kpi-improper-kits">0</strong></article>
       <article><span>SPM Update Completion</span><strong id="admin-kpi-completion">0%</strong><div class="admin-progress-track"><div id="admin-progress-bar" class="admin-progress-bar"></div></div></article>
     </section>
-
     <section class="admin-panel">
       <h2>Office-wise Consolidated Report</h2>
       <div class="table-scroll">
         <table class="admin-table admin-detailed-table report-admin-table">
-          <thead>
-            <tr>
-              <th>Office</th><th>SPM Status</th><th>Kits Came Today</th><th>Articles Came Today</th><th>Redirected Kits</th><th>Redirected Articles</th><th>Total Pending Kits</th><th>Tool Kit Articles</th>
-              <th>Invalid Mobile Kits</th><th>Invalid Mobile Articles</th>
-              <th>Deliverable Kits</th><th>Deliverable Articles</th>
-              <th>Incomplete Kits</th><th>Incomplete Articles</th>
-              <th>Improper Details/Address Kits</th><th>Improper Details/Address Articles</th>
-            </tr>
-          </thead>
+          <thead><tr>
+            <th>Office</th><th>SPM Status</th><th>Kits Came Today</th><th>Articles Came Today</th><th>Redirected Kits</th><th>Redirected Articles</th><th>Kits Delivered Today</th><th>Articles Delivered Today</th><th>Total Pending Kits</th><th>Tool Kit Articles</th>
+            <th>Invalid Mobile Kits</th><th>Invalid Mobile Articles</th><th>Deliverable Kits</th><th>Deliverable Articles</th><th>Incomplete Kits</th><th>Incomplete Articles</th><th>Improper Details/Address Kits</th><th>Improper Details/Address Articles</th>
+          </tr></thead>
           <tbody id="admin-report-rows"></tbody>
         </table>
       </div>
     </section>
-
     <section class="admin-panel">
       <h2>SPMs Who Have Not Updated</h2>
       <div class="table-scroll">
@@ -233,7 +184,6 @@
     </section>
   </div>
 </main>
-</section>
 </section>
 
 <script src="js/config.js"></script>
