@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0a3d62">
+<meta name="description" content="PMV Toolkit Management System — Department of Posts">
+<title>PMV Toolkit Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/admin-dashboard.css">
+<link rel="stylesheet" href="css/spm-notification.css">
+</head>
+<body>
+<div id="toast-container" class="toast-container"></div>
+<div id="modal-backdrop" class="modal-backdrop hidden"><div id="modal" class="modal"></div></div>
+
+<section id="view-login" class="view">
+  <div class="login-card">
+    <h1>PMV Toolkit Tracker</h1>
+    <p class="brand-sub">Department of Posts · Udhampur Division</p>
+    <form id="login-form">
+      <label>User ID<input id="login-user-id" required autocomplete="username"></label>
+      <label>Registered Mobile Number<input id="login-mobile" type="tel" inputmode="numeric" pattern="[0-9]{10}" required></label>
+      <button id="login-submit" class="btn btn-primary" type="submit">SIGN IN</button>
+    </form>
+    <p class="login-footnote">Access is restricted to authorized SPM / DPS / Admin users.</p>
+  </div>
+</section>
+
+<section id="view-app" class="view hidden">
+<header id="app-shell" class="app-header hidden">
+  <div class="app-header-top"><strong>✉ PMV Toolkit Tracker</strong><span id="connectivity-badge">Online</span></div>
+  <div class="app-header-bottom">
+    <div><span id="nav-user-name">—</span> <span id="nav-user-role" class="role-pill">—</span></div>
+    <nav>
+      <button id="nav-btn-entry" class="nav-btn hidden">Daily Entry</button>
+      <button id="nav-btn-dashboard" class="nav-btn hidden">Dashboard</button>
+      <button id="nav-logout" class="nav-btn">Logout</button>
+    </nav>
+  </div>
+</header>
+
+<main id="screen-entry" class="screen hidden">
+<form id="spm-form" class="form-shell" onsubmit="return false">
+  <div class="card">
+    <h2>Daily PMV Toolkit Report</h2>
+    <div class="field-row">
+      <label>Date<input type="date" id="spm-date" required></label>
+      <label>Office<select id="spm-office" required><option value="">Loading Office…</option></select></label>
+    </div>
+    <p class="form-help">Enter both <b>kits</b> and <b>tool-kit articles</b> exactly as per the office report.</p>
+  </div>
+
+  <div class="card">
+    <h3>PMV Toolkit Status</h3>
+    <div class="report-table-wrap">
+      <table class="report-table">
+        <thead>
+          <tr>
+            <th>Details of article</th>
+            <th>Kits</th>
+            <th>Tool kit articles</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="report-total-row">
+            <td><b>Total pending kits at SO</b></td>
+            <td><input id="total-pending-kits" type="number" min="0" readonly></td>
+            <td><input id="total-pending-articles" type="number" min="0" readonly></td>
+          </tr>
+          <tr>
+            <td>Kits bearing invalid mobile number</td>
+            <td><input id="invalid-mobile-kits" type="number" min="0" value="0" required></td>
+            <td><input id="invalid-mobile-articles" type="number" min="0" value="0" required></td>
+          </tr>
+          <tr>
+            <td>Number of kits Deliverable</td>
+            <td><input id="deliverable-kits" type="number" min="0" value="0" required></td>
+            <td><input id="deliverable-articles" type="number" min="0" value="0" required></td>
+          </tr>
+          <tr>
+            <td>Incomplete Kits</td>
+            <td><input id="incomplete-kits" type="number" min="0" value="0" required></td>
+            <td><input id="incomplete-articles" type="number" min="0" value="0" required></td>
+          </tr>
+          <tr>
+            <td>Kits without proper article details/address</td>
+            <td><input id="improper-details-kits" type="number" min="0" value="0" required></td>
+            <td><input id="improper-details-articles" type="number" min="0" value="0" required></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td><b>Total</b></td>
+            <td><b id="spm-total-kits">0</b></td>
+            <td><b id="spm-total-articles">0</b></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div id="spm-report-status"></div>
+
+  <div class="card summary-card">
+    <div><span>Total Pending Kits</span><b id="spm-summary-kits">0</b></div>
+    <div><span>Total Tool-kit Articles</span><b id="spm-summary-articles">0</b></div>
+  </div>
+
+  <div class="action-row">
+    <button type="button" id="btn-save-draft" class="btn btn-secondary">SAVE DRAFT</button>
+    <button type="button" id="btn-submit" class="btn btn-primary">SUBMIT REPORT</button>
+  </div>
+</form>
+</main>
+
+<main id="screen-dashboard" class="screen hidden">
+  <div id="spm-dashboard-view" class="report-dashboard hidden">
+    <header class="dashboard-head">
+      <div>
+        <p class="admin-eyebrow">PMV TOOLKIT</p>
+        <h1>My Office Dashboard</h1>
+        <p>SPM: <strong id="spm-dash-name">—</strong> · Office: <strong id="spm-dash-office">—</strong></p>
+      </div>
+      <div class="dashboard-actions">
+        <label>Date<input id="spm-dashboard-date" type="date"></label>
+        <button id="spm-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button>
+      </div>
+    </header>
+    <div id="spm-dashboard-status" class="admin-status">Loading…</div>
+    <section class="admin-kpi-grid report-kpis">
+      <article><span>Total Pending Kits</span><strong id="spm-kpi-pending-kits">0</strong></article>
+      <article><span>Tool-kit Articles</span><strong id="spm-kpi-pending-articles">0</strong></article>
+      <article><span>Deliverable Kits</span><strong id="spm-kpi-deliverable-kits">0</strong></article>
+      <article><span>Deliverable Articles</span><strong id="spm-kpi-deliverable-articles">0</strong></article>
+    </section>
+    <section class="admin-panel">
+      <h2>Office Report</h2>
+      <div class="report-table-wrap">
+        <table class="report-table dashboard-report-table">
+          <thead><tr><th>Details of article</th><th>Kits</th><th>Tool kit articles</th></tr></thead>
+          <tbody id="spm-dashboard-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div id="admin-dashboard-view" class="admin-dashboard hidden">
+    <header class="admin-dashboard-header">
+      <div>
+        <p class="admin-eyebrow">PMV TOOLKIT</p>
+        <h1>Admin / DPS Consolidated Dashboard</h1>
+        <p>Monitoring date: <strong id="admin-selected-date">—</strong></p>
+      </div>
+      <div class="dashboard-actions">
+        <label>Date<input id="admin-dashboard-date" type="date"></label>
+        <button id="admin-dashboard-refresh" type="button" class="btn btn-primary">Refresh</button>
+      </div>
+    </header>
+
+    <div id="admin-dashboard-status" class="admin-status">Loading…</div>
+
+    <section class="admin-kpi-grid report-kpis">
+      <article><span>Total Pending Kits</span><strong id="admin-kpi-pending-kits">0</strong></article>
+      <article><span>Tool-kit Articles</span><strong id="admin-kpi-pending-articles">0</strong></article>
+      <article><span>Deliverable Kits</span><strong id="admin-kpi-deliverable-kits">0</strong></article>
+      <article><span>Deliverable Articles</span><strong id="admin-kpi-deliverable-articles">0</strong></article>
+      <article><span>Invalid Mobile Kits</span><strong id="admin-kpi-invalid-mobile-kits">0</strong></article>
+      <article><span>Incomplete Kits</span><strong id="admin-kpi-incomplete-kits">0</strong></article>
+      <article><span>Improper Details Kits</span><strong id="admin-kpi-improper-kits">0</strong></article>
+      <article><span>SPM Update Completion</span><strong id="admin-kpi-completion">0%</strong><div class="admin-progress-track"><div id="admin-progress-bar" class="admin-progress-bar"></div></div></article>
+    </section>
+
+    <section class="admin-panel">
+      <h2>Office-wise Consolidated Report</h2>
+      <div class="table-scroll">
+        <table class="admin-table admin-detailed-table report-admin-table">
+          <thead>
+            <tr>
+              <th>Office</th><th>SPM Status</th><th>Total Pending Kits</th><th>Tool Kit Articles</th>
+              <th>Invalid Mobile Kits</th><th>Invalid Mobile Articles</th>
+              <th>Deliverable Kits</th><th>Deliverable Articles</th>
+              <th>Incomplete Kits</th><th>Incomplete Articles</th>
+              <th>Improper Details/Address Kits</th><th>Improper Details/Address Articles</th>
+            </tr>
+          </thead>
+          <tbody id="admin-report-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-panel">
+      <h2>SPMs Who Have Not Updated</h2>
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead><tr><th>#</th><th>SPM Name</th><th>SPM ID</th><th>Office</th><th>Status</th></tr></thead>
+          <tbody id="admin-report-pending-rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+</section>
+</section>
+
+<script src="js/config.js"></script>
+<script src="js/calculations.js"></script>
+<script src="js/validation.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sync.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/pmv-report.js"></script>
+<script src="js/spm-dashboard.js"></script>
+<script src="js/pmv-admin-dashboard.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
