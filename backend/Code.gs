@@ -1,4 +1,4 @@
-const SPREADSHEET_ID = "1vEjY1z-147b38XTWV7vRm_9pjXVMfJmjdQtrKRkkLy8";
+// PMV Toolkit v5.3.1 - corrected auto-calculation backend\nconst SPREADSHEET_ID = "1vEjY1z-147b38XTWV7vRm_9pjXVMfJmjdQtrKRkkLy8";
 const SHEETS = {
   DAILY_DATA: "DAILY_DATA",
   OFFICE_MASTER: "OFFICE_MASTER",
@@ -6,7 +6,8 @@ const SHEETS = {
   SET_TRACKER: "SET_TRACKER",
   AUDIT_LOG: "AUDIT_LOG",
   SESSIONS: "SESSIONS",
-  PMV_REPORTS: "PMV_REPORTS"
+  PMV_REPORTS: "PMV_REPORTS",
+  PMV_RECEIPTS: "PMV_RECEIPTS"
 };
 const ROLES = { SPM: "SPM", DPS: "DPS", ADMIN: "ADMIN" };
 const SESSION_DAYS = 7;
@@ -818,6 +819,10 @@ function setupSheets() {
       "SUBMITTED_AT","UPDATED_AT","STATUS",
       "KITS_CAME_TODAY","ARTICLES_CAME_TODAY","REDIRECTED_KITS","REDIRECTED_ARTICLES"
     ],
+    PMV_RECEIPTS:[
+      "ID","DATE","OFFICE_ID","OFFICE_NAME","SPM_ID","SPM_NAME",
+      "TYPE","MOVEMENT","QUANTITY","ENTERED_AT"
+    ],
     OFFICE_MASTER:[
       "OFFICE_ID","OFFICE_NAME","DIVISION","SPM_ID","SPM_NAME","ACTIVE"
     ],
@@ -970,12 +975,32 @@ function normalizePmvReport(r) {
     "invalidMobileKits","invalidMobileArticles",
     "deliverableKits","deliverableArticles",
     "incompleteKits","incompleteArticles",
-    "improperDetailsKits","improperDetailsArticles",
-    "kitsCameToday","articlesCameToday","redirectedKits","redirectedArticles"
+    "improperDetailsKits","improperDetailsArticles"
   ].forEach(function(k) {
     r[k] = pmvNumber(r[k]);
   });
 
+  r.receiptLines = Array.isArray(r.receiptLines) ? r.receiptLines.map(function(x) {
+    return {
+      type: String(x.type || "").trim().toUpperCase(),
+      movement: String(x.movement || "").trim().toUpperCase(),
+      quantity: pmvNumber(x.quantity)
+    };
+  }).filter(function(x) { return x.quantity > 0; }) : [];
+
+  // SERVER-CANONICAL CALCULATIONS
+  // Receipt/redirection totals are derived only from PMV_RECEIPTS entry lines.
+  // They are independent of the pending-status categories below.
+  var receiptTotals = calculateReceiptTotals(r.receiptLines);
+  r.kitsCameToday = receiptTotals.kitsCameToday;
+  r.articlesCameToday = receiptTotals.articlesCameToday;
+  r.redirectedKits = receiptTotals.redirectedKits;
+  r.redirectedArticles = receiptTotals.redirectedArticles;
+
+  // Pending totals MUST match the image/report structure:
+  // Pending Kits = Invalid Mobile + Deliverable + Incomplete + Improper Details
+  // Pending Articles = Invalid Mobile + Deliverable + Incomplete + Improper Details
+  // These totals are not reduced by receipt/redirection figures.
   r.totalPendingKits =
     r.invalidMobileKits +
     r.deliverableKits +
@@ -989,6 +1014,35 @@ function normalizePmvReport(r) {
     r.improperDetailsArticles;
 
   return r;
+}
+
+function calculateReceiptTotals(lines) {
+  var out = {kitsCameToday:0, articlesCameToday:0, redirectedKits:0, redirectedArticles:0};
+  (lines || []).forEach(function(x) {
+    var type = String(x.type || "").toUpperCase();
+    var movement = String(x.movement || "").toUpperCase();
+    var q = pmvNumber(x.quantity);
+    if (movement === "RECEIVED" && type === "KIT") out.kitsCameToday += q;
+    if (movement === "RECEIVED" && type === "ARTICLE") out.articlesCameToday += q;
+    if (movement === "REDIRECTED" && type === "KIT") out.redirectedKits += q;
+    if (movement === "REDIRECTED" && type === "ARTICLE") out.redirectedArticles += q;
+  });
+  return out;
+}
+
+function validateReceiptLines(lines) {
+  var errors = [];
+  if (!Array.isArray(lines)) return {valid:false, errors:["Receipt entries are required."]};
+  lines.forEach(function(x, i) {
+    var type = String(x.type || "").toUpperCase();
+    var movement = String(x.movement || "").toUpperCase();
+    var q = pmvNumber(x.quantity);
+    if (["KIT","ARTICLE"].indexOf(type) === -1) errors.push("Receipt row " + (i+1) + ": invalid type.");
+    if (["RECEIVED","REDIRECTED"].indexOf(movement) === -1) errors.push("Receipt row " + (i+1) + ": invalid movement.");
+    if (!Number.isInteger(Number(x.quantity)) || Number(x.quantity) < 0) errors.push("Receipt row " + (i+1) + ": quantity must be a non-negative whole number.");
+    if (q > 0 && errors.length === 0) {}
+  });
+  return {valid:errors.length === 0, errors:errors};
 }
 
 function validatePmvReport(r) {
@@ -1016,7 +1070,6 @@ function validatePmvReport(r) {
   }
 
   [
-    "kitsCameToday","articlesCameToday","redirectedKits","redirectedArticles",
     "invalidMobileKits","invalidMobileArticles",
     "deliverableKits","deliverableArticles",
     "incompleteKits","incompleteArticles",
@@ -1026,6 +1079,22 @@ function validatePmvReport(r) {
       errors.push(k + " must be a non-negative whole number.");
     }
   });
+
+  var rv = validateReceiptLines(r.receiptLines);
+  if (!rv.valid) errors = errors.concat(rv.errors);
+
+  // totalPendingKits/Articles and the four receipt totals are server-derived
+  // in normalizePmvReport(), so client-supplied totals are never trusted.
+  if (r.totalPendingKits !== (
+      r.invalidMobileKits + r.deliverableKits + r.incompleteKits + r.improperDetailsKits
+  )) {
+    errors.push("Total pending kits calculation mismatch.");
+  }
+  if (r.totalPendingArticles !== (
+      r.invalidMobileArticles + r.deliverableArticles + r.incompleteArticles + r.improperDetailsArticles
+  )) {
+    errors.push("Total pending articles calculation mismatch.");
+  }
 
   return {valid: errors.length === 0, errors: errors};
 }
@@ -1069,6 +1138,10 @@ function mapPmvReport(r) {
     updatedAt: r.UPDATED_AT || "",
     status: String(r.STATUS || "")
   };
+}
+
+function getPmvReceipts() {
+  return read(SHEETS.PMV_RECEIPTS);
 }
 
 function submitPmvReport(record, s) {
@@ -1126,6 +1199,14 @@ function submitPmvReport(record, s) {
     ];
 
     getSheet(SHEETS.PMV_REPORTS).appendRow(row);
+
+    var receiptSheet = getSheet(SHEETS.PMV_RECEIPTS);
+    (r.receiptLines || []).forEach(function(x, i) {
+      receiptSheet.appendRow([
+        r.id + "-" + (i + 1), r.date, r.officeId, r.officeName, r.spmId, r.spmName,
+        x.type, x.movement, x.quantity, new Date()
+      ]);
+    });
   } finally {
     lock.releaseLock();
   }
@@ -1171,7 +1252,13 @@ function deleteOwnPmvReport(s, date) {
       sh.deleteRow(Number(r.__row));
     });
 
-    return ok({deleted:true, rowsDeleted:rows.length}, "PMV report deleted.");
+    var receiptSheet = getSheet(SHEETS.PMV_RECEIPTS);
+    var receiptRows = getPmvReceipts().filter(function(x) {
+      return String(x.SPM_ID).trim() === String(a.user.USER_ID).trim() && dateOf(x.DATE) === d;
+    }).sort(function(x,y) { return Number(y.__row) - Number(x.__row); });
+    receiptRows.forEach(function(x) { receiptSheet.deleteRow(Number(x.__row)); });
+
+    return ok({deleted:true, rowsDeleted:rows.length, receiptRowsDeleted:receiptRows.length}, "PMV report deleted.");
   } finally {
     lock.releaseLock();
   }
