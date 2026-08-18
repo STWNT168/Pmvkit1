@@ -1477,4 +1477,157 @@ function getAdminPmvDashboard(s, date) {
     officeWise:offices,
     pendingSpms:pendingSpms
   });
+function normalize(r) {
+  r = JSON.parse(JSON.stringify(r || {}));
+  r.id = String(r.id || "").trim();
+  r.date = String(r.date || "").trim();
+  r.officeId = String(r.officeId || "").trim();
+
+  const fields = [
+    "kitsCameToday","articlesCameToday",
+    "redirectedKits","redirectedArticles",
+    "kitsDelivered","articlesDelivered",
+    "mobileInvalidKits","mobileInvalidArticles",
+    "addressNotFoundKits","addressNotFoundArticles",
+    "incompleteKits","incompleteArticles",
+    "deliverableKits","deliverableArticles"
+  ];
+
+  fields.forEach(k => {
+    r[k] = r[k] === "" || r[k] == null ? 0 : Number(r[k]);
+  });
+
+  return r;
+}
+
+function validateRecord(r) {
+  const e = [];
+
+  if (!r.id) e.push("Record ID is required.");
+  if (!r.date) e.push("Date is required.");
+  else {
+    try {
+      if (validateDate(r.date) > todayISO()) {
+        e.push("Future dates are not allowed.");
+      }
+    } catch (x) {
+      e.push(x.message);
+    }
+  }
+
+  if (!getOffice(r.officeId)) e.push("Office is invalid.");
+
+  [
+    "kitsCameToday","articlesCameToday",
+    "redirectedKits","redirectedArticles",
+    "kitsDelivered","articlesDelivered",
+    "mobileInvalidKits","mobileInvalidArticles",
+    "addressNotFoundKits","addressNotFoundArticles",
+    "incompleteKits","incompleteArticles"
+  ].forEach(k => {
+    if (!isInt(r[k]) || r[k] < 0) {
+      e.push(k + " must be a non-negative integer.");
+    }
+  });
+
+  if (r.redirectedKits > r.kitsCameToday) {
+    e.push("Redirected kits cannot exceed kits received today.");
+  }
+
+  if (r.redirectedArticles > r.articlesCameToday) {
+    e.push("Redirected articles cannot exceed articles received today.");
+  }
+
+  const netKits = r.kitsCameToday - r.redirectedKits;
+  const netArticles = r.articlesCameToday - r.redirectedArticles;
+
+  if (r.kitsDelivered > netKits) {
+    e.push("Kits delivered cannot exceed net kits received.");
+  }
+
+  if (r.articlesDelivered > netArticles) {
+    e.push("Articles delivered cannot exceed net articles received.");
+  }
+
+  const expectedDeliverableKits = Math.max(
+    0,
+    netKits -
+    r.mobileInvalidKits -
+    r.addressNotFoundKits -
+    r.incompleteKits
+  );
+
+  const expectedDeliverableArticles = Math.max(
+    0,
+    netArticles -
+    r.mobileInvalidArticles -
+    r.addressNotFoundArticles -
+    r.incompleteArticles
+  );
+
+  // Deliverable is calculated by backend; a submitted value, if present,
+  // must agree with the calculated value.
+  if (r.deliverableKits && r.deliverableKits !== expectedDeliverableKits) {
+    e.push("Deliverable kits calculation is incorrect.");
+  }
+
+  if (r.deliverableArticles && r.deliverableArticles !== expectedDeliverableArticles) {
+    e.push("Deliverable articles calculation is incorrect.");
+  }
+
+  if (r.mobileInvalidKits + r.addressNotFoundKits + r.incompleteKits > netKits) {
+    e.push("Kit classification total cannot exceed net kits received.");
+  }
+
+  if (r.mobileInvalidArticles + r.addressNotFoundArticles + r.incompleteArticles > netArticles) {
+    e.push("Article classification total cannot exceed net articles received.");
+  }
+
+  return { valid: e.length === 0, errors: e };
+}
+
+function previousPendingPair(r) {
+  const prevDate = shift(r.date, -1);
+  const x = dedupe().find(z =>
+    String(z.OFFICE_ID) === String(r.officeId) &&
+    dateOf(z.DATE) === prevDate
+  );
+
+  return {
+    kits: x ? num(x.CURRENT_PENDING_KITS || x.CURRENT_PENDING) : 0,
+    articles: x ? num(x.CURRENT_PENDING_ARTICLES) : 0
+  };
+}
+
+function totalsFor(r) {
+  const netKits = Math.max(0, r.kitsCameToday - r.redirectedKits);
+  const netArticles = Math.max(0, r.articlesCameToday - r.redirectedArticles);
+
+  const deliverableKits = Math.max(
+    0,
+    netKits -
+    r.mobileInvalidKits -
+    r.addressNotFoundKits -
+    r.incompleteKits
+  );
+
+  const deliverableArticles = Math.max(
+    0,
+    netArticles -
+    r.mobileInvalidArticles -
+    r.addressNotFoundArticles -
+    r.incompleteArticles
+  );
+
+  return {
+    netKits: netKits,
+    netArticles: netArticles,
+    deliverableKits: deliverableKits,
+    deliverableArticles: deliverableArticles,
+    deliveryPercentageKits: netKits
+      ? round(r.kitsDelivered / netKits * 100) : 0,
+    deliveryPercentageArticles: netArticles
+      ? round(r.articlesDelivered / netArticles * 100) : 0
+  };
+}
 }
