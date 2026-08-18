@@ -2,6 +2,7 @@ const PmvReport = (() => {
   const escapeHtml = v => String(v ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/\'/g,"&#39;");
   let office = null;
   let initialized = false;
+  let receiptLines = [];
 
   const fields = [
     ["invalid-mobile-kits","invalidMobileKits"],
@@ -49,6 +50,7 @@ const PmvReport = (() => {
   function data() {
     const s = Auth.getSession();
     const t = totals();
+    const rt = receiptTotals();
     return {
       id: `${UI.todayISO()}_${office?.officeId || s?.officeId || ""}_${crypto.randomUUID?.() || Date.now()}`,
       date: document.getElementById("spm-date")?.value || UI.todayISO(),
@@ -56,8 +58,15 @@ const PmvReport = (() => {
       officeName: office?.officeName || s?.officeName || "",
       spmId: s?.userId || "",
       spmName: s?.name || "",
+      // These four values are calculated here for the UI and are recalculated
+      // again by Code.gs from receiptLines before saving.
+      kitsCameToday: rt.kitsCameToday,
+      articlesCameToday: rt.articlesCameToday,
+      redirectedKits: rt.redirectedKits,
+      redirectedArticles: rt.redirectedArticles,
       totalPendingKits: t.kits,
       totalPendingArticles: t.articles,
+      receiptLines: receiptLines.map(x => ({type:x.type,movement:x.movement,quantity:x.quantity})),
       invalidMobileKits: n("invalid-mobile-kits"),
       invalidMobileArticles: n("invalid-mobile-articles"),
       deliverableKits: n("deliverable-kits"),
@@ -68,6 +77,48 @@ const PmvReport = (() => {
       improperDetailsArticles: n("improper-details-articles"),
       submittedAt: new Date().toISOString()
     };
+  }
+
+  function receiptTotals() {
+    return receiptLines.reduce((a,x) => {
+      if (x.movement === "RECEIVED" && x.type === "KIT") a.kitsCameToday += x.quantity;
+      if (x.movement === "RECEIVED" && x.type === "ARTICLE") a.articlesCameToday += x.quantity;
+      if (x.movement === "REDIRECTED" && x.type === "KIT") a.redirectedKits += x.quantity;
+      if (x.movement === "REDIRECTED" && x.type === "ARTICLE") a.redirectedArticles += x.quantity;
+      return a;
+    }, {kitsCameToday:0,articlesCameToday:0,redirectedKits:0,redirectedArticles:0});
+  }
+
+  function renderReceiptLines() {
+    const tbody = document.getElementById("receipt-entry-rows");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    receiptLines.forEach((x,i) => {
+      const tr = document.createElement("tr");
+      [x.type === "KIT" ? "Kit" : "Article", x.movement === "RECEIVED" ? "Received Today" : "Redirected", x.quantity].forEach(v => {
+        const td=document.createElement("td"); td.textContent=String(v); tr.appendChild(td);
+      });
+      const td=document.createElement("td");
+      const b=document.createElement("button"); b.type="button"; b.className="btn btn-danger"; b.textContent="REMOVE";
+      b.onclick=()=>{ receiptLines.splice(i,1); renderReceiptLines(); };
+      td.appendChild(b); tr.appendChild(td); tbody.appendChild(tr);
+    });
+    if (!receiptLines.length) tbody.innerHTML='<tr><td colspan="4">No receipt/redirection entries added yet.</td></tr>';
+    const t=receiptTotals();
+    setText("kits-came-today",t.kitsCameToday);
+    setText("articles-came-today",t.articlesCameToday);
+    setText("redirected-kits",t.redirectedKits);
+    setText("redirected-articles",t.redirectedArticles);
+  }
+
+  function addReceiptLine() {
+    const type=document.getElementById("receipt-type")?.value || "KIT";
+    const movement=document.getElementById("receipt-movement")?.value || "RECEIVED";
+    const quantity=Math.floor(Number(document.getElementById("receipt-quantity")?.value || 0));
+    if (!quantity || quantity < 1) { UI.toast("Enter a quantity of at least 1.","warning"); return; }
+    receiptLines.push({type,movement,quantity});
+    document.getElementById("receipt-quantity").value="1";
+    renderReceiptLines();
   }
 
   function setOffice(d) {
@@ -105,6 +156,8 @@ const PmvReport = (() => {
   }
 
   function clearForm() {
+    receiptLines = [];
+    renderReceiptLines();
     fields.forEach(([id]) => {
       const e = document.getElementById(id);
       if (e) e.value = "0";
@@ -125,7 +178,7 @@ const PmvReport = (() => {
     box.className = "report-notice report-notice-success";
     box.innerHTML =
       `<strong>Today's report is already submitted.</strong>` +
-      `<span>Total pending: ${Number(record.totalPendingKits || 0)} kits / ${Number(record.totalPendingArticles || 0)} articles.</span>` +
+      `<span>Today's receipts: ${Number(record.kitsCameToday || 0)} kits / ${Number(record.articlesCameToday || 0)} articles. Redirected: ${Number(record.redirectedKits || 0)} kits / ${Number(record.redirectedArticles || 0)} articles.</span>` +
       `<button type="button" id="delete-pmv-report" class="btn btn-danger">Delete Today's Report</button>`;
 
     document.getElementById("delete-pmv-report").onclick = deleteToday;
@@ -207,6 +260,7 @@ const PmvReport = (() => {
 
   function bind() {
     document.getElementById("spm-form")?.addEventListener("input", recalculate);
+    document.getElementById("receipt-add")?.addEventListener("click", addReceiptLine);
     document.getElementById("spm-date")?.addEventListener("change", refreshStatus);
     document.getElementById("btn-save-draft")?.addEventListener("click", saveDraft);
     document.getElementById("btn-submit")?.addEventListener("click", submit);
@@ -225,6 +279,7 @@ const PmvReport = (() => {
     }
     await loadOffice();
     bind();
+    renderReceiptLines();
     recalculate();
     await refreshStatus();
   }

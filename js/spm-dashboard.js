@@ -21,6 +21,7 @@ const SpmDashboard = (() => {
     const empty = !r;
 
     const totals = r || {
+      kitsCameToday:0,articlesCameToday:0,redirectedKits:0,redirectedArticles:0,
       totalPendingKits:0,totalPendingArticles:0,
       invalidMobileKits:0,invalidMobileArticles:0,
       deliverableKits:0,deliverableArticles:0,
@@ -28,6 +29,10 @@ const SpmDashboard = (() => {
       improperDetailsKits:0,improperDetailsArticles:0
     };
 
+    set("spm-kpi-kits-came-today", num(totals.kitsCameToday));
+    set("spm-kpi-articles-came-today", num(totals.articlesCameToday));
+    set("spm-kpi-redirected-kits", num(totals.redirectedKits));
+    set("spm-kpi-redirected-articles", num(totals.redirectedArticles));
     set("spm-kpi-pending-kits", num(totals.totalPendingKits));
     set("spm-kpi-pending-articles", num(totals.totalPendingArticles));
     set("spm-kpi-deliverable-kits", num(totals.deliverableKits));
@@ -38,6 +43,8 @@ const SpmDashboard = (() => {
     tbody.innerHTML = "";
 
     const rows = [
+      ["Total Kits Came Today", totals.kitsCameToday, totals.articlesCameToday],
+      ["Redirected", totals.redirectedKits, totals.redirectedArticles],
       ["Total pending kits at SO", totals.totalPendingKits, totals.totalPendingArticles],
       ["Kits bearing invalid mobile number", totals.invalidMobileKits, totals.invalidMobileArticles],
       ["Number of kits Deliverable", totals.deliverableKits, totals.deliverableArticles],

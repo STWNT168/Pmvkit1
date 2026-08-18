@@ -16,6 +16,10 @@ const PmvAdminDashboard = (() => {
     const k = d.kpis || {};
 
     set("admin-selected-date", d.date || "—");
+    set("admin-kpi-kits-came-today", num(k.kitsCameToday));
+    set("admin-kpi-articles-came-today", num(k.articlesCameToday));
+    set("admin-kpi-redirected-kits", num(k.redirectedKits));
+    set("admin-kpi-redirected-articles", num(k.redirectedArticles));
     set("admin-kpi-pending-kits", num(k.totalPendingKits));
     set("admin-kpi-pending-articles", num(k.totalPendingArticles));
     set("admin-kpi-deliverable-kits", num(k.deliverableKits));
@@ -36,6 +40,10 @@ const PmvAdminDashboard = (() => {
         [
           o.officeName || "—",
           `${num(o.updatedSpms)}/${num(o.totalSpms)} updated`,
+          o.kitsCameToday,
+          o.articlesCameToday,
+          o.redirectedKits,
+          o.redirectedArticles,
           o.totalPendingKits,
           o.totalPendingArticles,
           o.invalidMobileKits,
@@ -54,7 +62,7 @@ const PmvAdminDashboard = (() => {
         tbody.appendChild(tr);
       });
       if (!tbody.children.length) {
-        tbody.innerHTML = '<tr><td colspan="12">No active offices found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="16">No active offices found.</td></tr>';
       }
     }
 
