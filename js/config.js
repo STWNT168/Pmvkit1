@@ -1,5 +1,5 @@
 const CONFIG = Object.freeze({
-  API_URL: "https://script.google.com/macros/s/AKfycbwqvDnfAC6ICego36HMebIJPm-n2NW_zr_UOa9Hxmyi-KvH5uHARSkCAUD9zl9r1qHDvg/exec",
+  API_URL: "https://script.google.com/macros/s/AKfycbz99tuShcZP2e4cPYKObZU0SGbckHL6uw68wRfZCwmRO9xAQuPNpinC0LisHvEDWxxC/exec",
   APP_NAME: "PMV Toolkit Management System",
   SHORT_NAME: "PMV Tracker",
   VERSION: "5.1.0",
