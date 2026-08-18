@@ -1,9 +1,9 @@
-const CACHE="pmv-toolkit-v5.0.7";
+const CACHE="pmv-toolkit-v5.3.0";
 const ASSETS=[
   "./","./index.html","./manifest.json",
   "./css/style.css","./css/admin-dashboard.css","./css/spm-notification.css",
   "./js/config.js","./js/calculations.js","./js/validation.js","./js/storage.js",
-  "./js/api.js","./js/auth.js","./js/sync.js","./js/ui.js","./js/spm.js",
+  "./js/api.js","./js/auth.js","./js/sync.js","./js/ui.js","./js/spm.js","./js/pmv-report.js","./js/pmv-admin-dashboard.js","./js/spm-dashboard.js",
   "./js/admin-dashboard-api.js","./js/admin-dashboard.js"
 ];
 

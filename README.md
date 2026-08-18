@@ -23,3 +23,7 @@ Then put the deployed Web App URL in `js/config.js`.
 
 ## Static hosting
 The frontend can be hosted on GitHub Pages or another static host.
+
+
+## v5.2.0
+Added Total Kits Came Today, Total Articles Came Today, Redirected Kits and Redirected Articles to SPM entry and SPM/Admin dashboards. PMV_REPORTS schema migrates automatically via setupSheets().

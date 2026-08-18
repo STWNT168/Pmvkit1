@@ -50,18 +50,29 @@
       <label>Date<input type="date" id="spm-date" required></label>
       <label>Office<select id="spm-office" required><option value="">Loading Office…</option></select></label>
     </div>
-    <p class="form-help">Enter both <b>kits</b> and <b>tool-kit articles</b> exactly as per the office report. Include today's receipts and redirected items.</p>
+    <p class="form-help">Enter the four status categories exactly as per the office report. Total pending is calculated automatically as the sum of Invalid Mobile + Deliverable + Incomplete + Improper Details. Receipt and redirection totals are calculated separately from the entries below.</p>
   </div>
 
   <div class="card">
-    <h3>Today's Receipt &amp; Redirection</h3>
-    <div class="field-row">
-      <label>Total Kits Came Today<input id="kits-came-today" type="number" min="0" value="0" required></label>
-      <label>Total Articles Came Today<input id="articles-came-today" type="number" min="0" value="0" required></label>
+    <h3>Today's Receipt &amp; Redirection — Auto Calculated</h3>
+    <p class="form-help">Add individual receipt/redirection quantities below. The four totals are calculated automatically and cannot be edited directly. These totals are independent of the pending-status calculation.</p>
+    <div class="receipt-entry-grid">
+      <div><label>Type<select id="receipt-type"><option value="KIT">Kit</option><option value="ARTICLE">Article</option></select></label></div>
+      <div><label>Movement<select id="receipt-movement"><option value="RECEIVED">Received Today</option><option value="REDIRECTED">Redirected</option></select></label></div>
+      <div><label>Quantity<input id="receipt-quantity" type="number" min="1" value="1" inputmode="numeric"></label></div>
+      <div class="receipt-add-wrap"><button type="button" id="receipt-add" class="btn btn-secondary">ADD ENTRY</button></div>
     </div>
-    <div class="field-row">
-      <label>Redirected Kits<input id="redirected-kits" type="number" min="0" value="0" required></label>
-      <label>Redirected Articles<input id="redirected-articles" type="number" min="0" value="0" required></label>
+    <div class="report-table-wrap">
+      <table class="report-table">
+        <thead><tr><th>Type</th><th>Movement</th><th>Quantity</th><th>Action</th></tr></thead>
+        <tbody id="receipt-entry-rows"></tbody>
+      </table>
+    </div>
+    <div class="admin-kpi-grid report-kpis receipt-totals">
+      <article><span>Total Kits Came Today</span><strong id="kits-came-today">0</strong></article>
+      <article><span>Total Articles Came Today</span><strong id="articles-came-today">0</strong></article>
+      <article><span>Redirected Kits</span><strong id="redirected-kits">0</strong></article>
+      <article><span>Redirected Articles</span><strong id="redirected-articles">0</strong></article>
     </div>
   </div>
 
